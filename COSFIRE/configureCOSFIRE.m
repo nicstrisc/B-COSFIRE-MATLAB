@@ -1,21 +1,5 @@
-% Delineation of blood vessels in retinal images based on combination of BCOSFIRE filters responses.
-%
-% VERSION 02/09/2016
-% CREATED BY: George Azzopardi (1), Nicola Strisciuglio (1,2), Mario Vento (2) and Nicolai Petkov (1)
-%             1) University of Groningen, Johann Bernoulli Institute for Mathematics and Computer Science, Intelligent Systems
-%             1) University of Salerno, Dept. of Information Eng., Electrical Eng. and Applied Math., MIVIA Lab
-%
-%   If you use this script please cite the following paper:
-%   [1] "George Azzopardi, Nicola Strisciuglio, Mario Vento, Nicolai Petkov, 
-%   Trainable COSFIRE filters for vessel delineation with application to retinal images, 
-%   Medical Image Analysis, Volume 19 , Issue 1 , 46 - 57, ISSN 1361-8415, 
-%   http://dx.doi.org/10.1016/j.media.2014.08.002"
-% 
-%   BCOSFIRE achieves orientation selectivity by combining the output - at certain 
-%   positions with respect to the center of the COSFIRE filter - of center-on 
-%   difference of Gaussians (DoG) functions by a  geometric mean. 
-
 function operator = configureCOSFIRE(featureImage,keypoint,params)
+
 
 if strcmp(params.inputfilter.name,'Gabor')
     % Get responses of a Bank of Gabor filters

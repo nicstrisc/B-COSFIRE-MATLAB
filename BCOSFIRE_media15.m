@@ -1,4 +1,4 @@
-function [resp oriensmap] = BCOSFIRE(image, filter1, filter2, preprocessthresh)
+function [resp oriensmap] = BCOSFIRE_media15(image, filter1, filter2, preprocessthresh)
 % Delineation of blood vessels in retinal images based on combination of BCOSFIRE filters responses.
 %
 % VERSION 02/09/2016
