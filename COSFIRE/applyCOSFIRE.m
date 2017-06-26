@@ -1,36 +1,34 @@
+% Delineation of blood vessels in retinal images based on combination of BCOSFIRE filters responses.
+%
+% VERSION 02/09/2016
+% CREATED BY: George Azzopardi (1), Nicola Strisciuglio (1,2), Mario Vento (2) and Nicolai Petkov (1)
+%             1) University of Groningen, Johann Bernoulli Institute for Mathematics and Computer Science, Intelligent Systems
+%             1) University of Salerno, Dept. of Information Eng., Electrical Eng. and Applied Math., MIVIA Lab
+%
+%   If you use this script please cite the following paper:
+%   [1] "George Azzopardi, Nicola Strisciuglio, Mario Vento, Nicolai Petkov, 
+%   Trainable COSFIRE filters for vessel delineation with application to retinal images, 
+%   Medical Image Analysis, Volume 19 , Issue 1 , 46 - 57, ISSN 1361-8415, 
+%   http://dx.doi.org/10.1016/j.media.2014.08.002"
+% 
+%   BCOSFIRE achieves orientation selectivity by combining the output - at certain 
+%   positions with respect to the center of the COSFIRE filter - of center-on 
+%   difference of Gaussians (DoG) functions by a  geometric mean. 
+
 function rotations = applyCOSFIRE(inputImage, operatorlist)
-% Main function for the application of COSFIRE filters to images. It is used 
-% to filter the input image with a bank of pre-configured COSFIRE filters.
-%
-% Authors: George Azzopardi, Nicola Strisciuglio
-%
-%   applyCOSFIRE takes as input:
-%      inputImage -> Grayscale input image
-%      operatorlist -> a list of the configured COSFIRE filters
-%
-%   applyCOSFIRE returns:
-%      rotations    -> response of the concerned filters at each preferred
-%                   orientation
-%
-%   The output of this function needs further processing, in order to
-%   obtain the final response of a rotation-tolerant COSFIRE filter. The
-%   final response can be achieved by selective the pixel-wise maximum
-%   across the orientation responses.
 
-% Compute the tuple responses to be used in the COSFIRE filtering
-tuple = computeTuples(inputImage, operatorlist);
-
-%output = cell(1,length(operatorlist));
-%oriensmap = cell(1,length(operatorlist));
+tuple = computeTuples(inputImage,operatorlist);
+output = cell(1,length(operatorlist));
+oriensmap = cell(1,length(operatorlist));
 
 for opindex = 1:length(operatorlist)
     operator = operatorlist{opindex};
 
     cosfirefun = @(inputImage,operator,tuple) computeCOSFIRE(inputImage,operator,tuple);                                                  
-    output{opindex} = rotationInvariantCOSFIRE(inputImage,operator,tuple,cosfirefun);
+    rotations{opindex} = rotationInvariantCOSFIRE(inputImage,operator,tuple,cosfirefun);
         
     % Suppress values that are less than a fraction t3 of the maximum
-    output{opindex}(output{opindex} < operator.params.COSFIRE.t3 * max(output{opindex}(:))) = 0;
+    %output{opindex}(output{opindex} < operator.params.COSFIRE.t3 * max(output{opindex}(:))) = 0;
 end
 
 function [tuple] = computeTuples(inputImage,operator)
@@ -275,7 +273,7 @@ operator.tuples = round(operator.tuples * 10000) / 10000;
 sz = size(inputImage);
 output = ones(sz);
 ntuples = size(operator.tuples,2);
-%tupleoutputs = 0;
+tupleoutputs = 0;
 % Loop through all tuples (subunits) of the operator
 outputs = zeros(sz(1), sz(2), ntuples);
 for sindex = 1:ntuples
@@ -301,12 +299,12 @@ end
 
 if strcmp(operator.params.COSFIRE.outputfunction, 'weightedgeometricmean')
     % Compute the COSFIRE output using weighted geometric mean
-    tupleweightsigma = sqrt(-max(operator.tuples(3,:)) ^2 / (2 * log(operator.params.COSFIRE.mintupleweight)));
-    tupleweight = exp(-(operator.tuples(3,:) .^ 2) ./ (2 * tupleweightsigma * tupleweightsigma));    
-    output = output .^ (1 / sum(tupleweight));    
+    tupleweightsigma = sqrt(-max(operator.tuples(3,:))^2/(2*log(operator.params.COSFIRE.mintupleweight)));
+    tupleweight = exp(-(operator.tuples(3,:).^2)./(2*tupleweightsigma*tupleweightsigma));    
+    output = output .^ (1/sum(tupleweight));    
 elseif strcmp(operator.params.COSFIRE.outputfunction, 'geometricmean')
     % Compute the COSFIRE output using geometric mean
-    m = output .^ (1 / ntuples);
+    m = output .^ (1/ntuples);
     output = m;
 elseif strcmp(operator.params.COSFIRE.outputfunction, 'arithmeticmean')
     output = mean(outputs, 3);

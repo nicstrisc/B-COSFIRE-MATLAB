@@ -21,7 +21,7 @@ This code provides the benchmark results on the images of the INRIA data
 set used in the paper  
 _Strisciuglio, N. Petkov, N._ "Delineation of line patterns in images using B-COSFIRE filters", IWOBI 2017.
 
-The images are available at [this website](http://www-sop.inria.fr/members/Florent.Lafarge/benchmark/line-network_extraction/line-networks.html).
+The images used in this example are available at [this website](http://www-sop.inria.fr/members/Florent.Lafarge/benchmark/line-network_extraction/line-networks.html).
 
 ### PavementCrackDelineation.m
 _In preparation_
