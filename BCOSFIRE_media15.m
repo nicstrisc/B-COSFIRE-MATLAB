@@ -117,7 +117,7 @@ image = 1 - image;
 rot1 = applyCOSFIRE(image, symmfilter);
 rot2 = applyCOSFIRE(image, asymmfilter);
 
-if nargout == 1
+if nargout == 1 
     % The code as presented in the paper
     rot1 = max(rot1{1},[],3);
     rot2 = max(rot2{1},[],3);
