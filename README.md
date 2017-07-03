@@ -58,7 +58,7 @@ __Supervised learning of B-COSFIRE filters:__
 
 ## Changelog
 
-__3 Jul 2017__
-applyCOSFIRE_inhib.m:132/137 - Approximatation of the shifting amount corrected
+__3 Jul 2017__  
+applyCOSFIRE_inhib.m:132/137 - Approximatation of the shifting amount corrected  
 The results published in the paper "_Strisciuglio, N. Petkov, N._ "Delineation of line patterns in images using B-COSFIRE filters", IWOBI 2017." are slightly different due to this bug fixing.
 
