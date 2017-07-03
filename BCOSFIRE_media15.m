@@ -125,9 +125,9 @@ if nargout == 1
 elseif nargout == 2   
     % Modified code to also give the orientation map as output
     for i = 1:size(rot1{1},3)
-        resp(:,:,i) = rot1{1}(:,:,i) + max(rot2{1}(:,:,i),rot2{1}(:,:,i+12));    
+        resp(:,:,i) = rot1{1}(:, :, i) + max(rot2{1}(:,:,i),rot2{1}(:,:,i+12));    
     end
-    [resp,oriensmap] = max(resp,[],3);
+    [resp,oriensmap] = max(resp, [], 3);
     oriensmap = symm_params.invariance.rotation.psilist(oriensmap);
     oriensmap = oriensmap .* mask;
 end

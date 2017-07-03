@@ -18,6 +18,7 @@
 function rotations = applyCOSFIRE(inputImage, operatorlist)
 
 tuple = computeTuples(inputImage,operatorlist);
+
 output = cell(1,length(operatorlist));
 oriensmap = cell(1,length(operatorlist));
 
@@ -106,7 +107,9 @@ switch (params.ht)
         for i = 1:size(inputfilterparams,1)
             inputfilterresponse(:,:,i) = getGaborResponse(inputImage,params,inputfilterparams(i,1),inputfilterparams(i,2));    
         end
-        inputfilterresponse(inputfilterresponse < params.COSFIRE.t1*max(inputfilterresponse(:))) = 0;
+        % Half-wave rectification (a.k.a Rectifier Linear Unit, ReLU) for
+        % t1 = 0
+        inputfilterresponse(inputfilterresponse < params.COSFIRE.t1 * max(inputfilterresponse(:))) = 0;
         
         response = cell(1,size(tupleparams,1));
         for i = 1:size(tupleparams,1)
@@ -130,7 +133,7 @@ switch (params.ht)
             end            
 
             if strcmp(params.COSFIRE.outputfunction,'weightedgeometricmean')                     
-                weight = exp(-tupleparams(i,3)^2/(2*params.COSFIRE.weightingsigma*params.COSFIRE.weightingsigma)); 
+                weight = exp(-tupleparams(i,3)^2 / (2*params.COSFIRE.weightingsigma*params.COSFIRE.weightingsigma)); 
                 response{i} = response{i} .^ weight;                    
             end
         end
@@ -283,10 +286,10 @@ for sindex = 1:ntuples
     switch (operator.params.ht)
         case 0
             index = ismember(tuple.params,operator.tuples(1:3,sindex)','rows');
-            tupleoutput = circshift(tuple.response{index},[fix(row),-fix(col)]);               
+            tupleoutput = circshift(tuple.response{index},[round(row),-round(col)]);               
         case 1
             hashkey = getHashkey(operator.tuples(1:3,sindex)');            
-            tupleoutput = circshift(tuple.hashtable(hashkey),[fix(row),-fix(col)]);
+            tupleoutput = circshift(tuple.hashtable(hashkey),[round(row),-round(col)]);
     end
     
     outputs(:,:,sindex) = tupleoutput;

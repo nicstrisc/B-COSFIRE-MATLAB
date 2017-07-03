@@ -26,14 +26,6 @@ The images used in this example are available at [this website](http://www-sop.i
 ### PavementCrackDelineation.m
 _In preparation_
 
-## Authors
-The B-COSFIRE filters were originally proposed by _George Azzopardi, Nicola Strisciuglio, Mario Vento and Nicolai Petkov_ 
-in the paper __"Trainable COSFIRE filters for delineation of blood vessels with applciation to retinal images"__,
-published in the Journal of Medical Image Analysis (Elsevier), 2015.  
-
-This code is developed by Nicola Strisciuglio and George Azzopardi.
-
-
 ## Reference publications
 If you use this code please cite the following articles. 
 
@@ -64,4 +56,9 @@ __Supervised learning of B-COSFIRE filters:__
 	} 
 
 
+## Changelog
+
+__3 Jul 2017__
+applyCOSFIRE_inhib.m:132/137 - Approximatation of the shifting amount corrected
+The results published in the paper "_Strisciuglio, N. Petkov, N._ "Delineation of line patterns in images using B-COSFIRE filters", IWOBI 2017." are slightly different due to this bug fixing.
 

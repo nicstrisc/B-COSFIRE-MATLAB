@@ -1,1 +1,6 @@
-# Results achieved by B-COSFIRE filters on benchmark data sets 
+# Results achieved on benchmark data sets 
+## INRIA line networks
+
+
+## 
+

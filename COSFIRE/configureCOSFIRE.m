@@ -13,7 +13,7 @@ end
 %figure; showim(input);
 
 %Suppress the responses that are lower than a given threshold t1 from the maximum response
-input(input < params.COSFIRE.t1*max(input(:))) = 0;    
+input(input < params.COSFIRE.t1 * max(input(:))) = 0;    
 
 operator.tuples = getCOSFIRETuples(input,keypoint,params);    
 operator.params = params;
@@ -31,8 +31,10 @@ biginput = zeros(sz(1) + (2*supportRadius),sz(2) + (2*supportRadius),sz(3),sz(4)
 biginput(supportRadius+1:end-supportRadius,supportRadius+1:end-supportRadius,:,:) = input;
 keypoint = keypoint + supportRadius;
 
-biginput(biginput < params.COSFIRE.t2*max(biginput(:))) = 0;
-maxInput = max(reshape(biginput,sz(1)+(2*supportRadius),sz(2)+(2*supportRadius),prod(sz(3:end))),[],3);
+% Bugfix: t2 is not performed here, according to the original PAMI paper
+%biginput(biginput < params.COSFIRE.t2 * max(biginput(:))) = 0; 
+
+maxInput = max(reshape(biginput, sz(1) + (2 * supportRadius), sz(2) + (2 * supportRadius), prod(sz(3:end))), [], 3);
 
 for r = 1:length(params.COSFIRE.rholist)  
     tuple = getTuples(biginput, maxInput,keypoint,params.COSFIRE.rholist(r),params);
@@ -44,12 +46,14 @@ function tuple = getTuples(input,maxInput,keypoint,rho,params)
 if rho == 0
     if strcmp(params.inputfilter.name,'Gabor')
         centreResponses = reshape(input(keypoint(1),keypoint(2),:),length(params.inputfilter.Gabor.thetalist),length(params.inputfilter.Gabor.lambdalist))';
+        centreResponses(centreResponses < (params.COSFIRE.t2 * max(centreResponses(:)))) = 0;
         [thetaMax, lambdaIndex] = max(centreResponses,[],1);
         thetaIndex = find(thetaMax);
         tuple.param1 = params.inputfilter.Gabor.lambdalist(lambdaIndex(thetaIndex));
         tuple.param2 = params.inputfilter.Gabor.thetalist(thetaIndex);        
     elseif strcmp(params.inputfilter.name,'DoG')
         centreResponses = squeeze(input(keypoint(1),keypoint(2),:,:));
+        centreResponses(centreResponses < (params.COSFIRE.t2 * max(centreResponses(:)))) = 0;
         [polarityMax, sigmaIndex] = max(centreResponses,[],1);
         polarityIndex = find(polarityMax);
         tuple.param1 = params.inputfilter.DoG.polaritylist(polarityIndex);
@@ -94,6 +98,7 @@ elseif rho > 0
     for i = 1:length(phivalues)
         if strcmp(params.inputfilter.name,'Gabor')
             responses = reshape(input(keypoint(1)-round(y(i)),keypoint(2)+round(x(i)),:),length(params.inputfilter.Gabor.thetalist),length(params.inputfilter.Gabor.lambdalist))';        
+            responses(responses < (params.COSFIRE.t2 * max(responses(:)))) = 0;
             [thetaMax, lambdaIndex] = max(responses,[],1);
             thetaIndex = find(thetaMax);
             tuple.param1 = [tuple.param1 params.inputfilter.Gabor.lambdalist(lambdaIndex(thetaIndex))];
@@ -101,6 +106,7 @@ elseif rho > 0
             tuple.phi    = [tuple.phi repmat(phivalues(i),1,length(thetaIndex))];
         elseif strcmp(params.inputfilter.name,'DoG')
             responses = squeeze(input(keypoint(1)-round(y(i)),keypoint(2)+round(x(i)),:,:));
+            responses(responses < (params.COSFIRE.t2 * max(responses(:)))) = 0;
             [polarityMax, sigmaIndex] = max(responses,[],1);
             polarityIndex = find(polarityMax);            
             tuple.param1 = [tuple.param1 params.inputfilter.DoG.polaritylist(polarityIndex)];

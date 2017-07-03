@@ -1,5 +1,19 @@
 function [output, rotations] = applyCOSFIRE_inhib(inputImage, operatorlist, inhibfactor, tuple)
+% Delineation of elongated patterns in images.
 % Application of a B-COSFIRE filter with or without inhibition
+%
+%   version: 03/07/2017
+%   author: Nicola Strisciuglio
+%
+%
+%   If you use this script please cite the following paper:
+%   "George Azzopardi, Nicola Strisciuglio, Mario Vento, Nicolai Petkov, 
+%   Trainable COSFIRE filters for vessel delineation with application to retinal images, 
+%   Medical Image Analysis, Volume 19 , Issue 1 , 46 - 57, ISSN 1361-8415, 
+%   http://dx.doi.org/10.1016/j.media.2014.08.002"
+
+
+    
     if nargin < 4
         tuple = computeTuples(inputImage, operatorlist);
     end
@@ -12,10 +26,13 @@ function [output, rotations] = applyCOSFIRE_inhib(inputImage, operatorlist, inhi
         inhibitoryOperator = [];
     end
 
+    % COSFIRE response computation
     cosfirefun = @(inputImage,operator,tuple) computeCOSFIRE(inputImage, operator, tuple);                                                  
-    %scalefun = @(inputImage,operator,tuple) scaleInvariantCOSFIRE(inputImage,excitatoryOperator,inhibitoryOperator,tuple,cosfirefun);
+%     scalefun = @(inputImage,operator,tuple) scaleInvariantCOSFIRE(inputImage,excitatoryOperator,inhibitoryOperator,tuple,cosfirefun);
 %     rotationfun = @(inputImage,operator,tuple) rotationInvariantCOSFIRE(inputImage,excitatoryOperator,inhibitoryOperator,tuple,scalefun);
 %     output{opindex} = reflectionInvariantCOSFIRE(inputImage,excitatoryOperator,inhibitoryOperator,tuple,rotationfun);                     
+
+    % We compute COSFIRE responses only in rotation-tolerant mode
     if nargout == 2
         [output{1}, rotations] = rotationInvariantCOSFIRE(inputImage, excitatoryOperator, inhibitoryOperator, tuple, cosfirefun, inhibfactor);                     
     else
@@ -67,7 +84,8 @@ function [output rotations] = rotationInvariantCOSFIRE(inputImage, excitatoryOpe
         rotateExcitatoryDetector.tuples(4,:) = excitatoryOperator.tuples(4,:) + excitatoryOperator.params.invariance.rotation.psilist(psiindex);            
         % Compute the output of COSFIRE for the given psi value
         rotexcoutput = feval(funCOSFIRE,inputImage,rotateExcitatoryDetector,tuple);    
-        % Compute inhibitory response if enabled
+        
+        % Compute inhibitory response (if enabled)
         if inhibfactor > 0
             rotateInhibitoryDetector.tuples(4,:) = inhibitoryOperator.tuples(4,:) + inhibitoryOperator.params.invariance.rotation.psilist(psiindex);            
             rotinhoutput = feval(funCOSFIRE, inputImage, rotateInhibitoryDetector, tuple);    
@@ -121,18 +139,22 @@ function [output] = computeCOSFIRE(inputImage,operator,tuple)
     for sindex = 1:ntuples
         % Convert the polar-coordinate shift vector (rho,phi) to image coordinates
         [col row] = pol2cart(operator.tuples(4,sindex),operator.tuples(3,sindex));  
-        %disp(['theta: ' num2str(operator.tuples(4,sindex)) ' r: ' num2str(operator.tuples(3,sindex)) ' x: ' num2str(int16(col)) ' y:' num2str(-int16(row))]);
+       
         switch (operator.params.ht)
             case 0
                 index = ismember(tuple.params,operator.tuples(1:3,sindex)','rows');
-                tupleoutput = circshift(tuple.response{index},[fix(row),-fix(col)]);               
+                % Bugfix #1: approximation of the position was not correct.
+                % fix() was substituted with round()
+                tupleoutput = circshift(tuple.response{index},[round(row), -round(col)]); 
             case 1
                 hashkey = getHashkey([operator.tuples(1:3,sindex)',sigma0,alpha]);
-                tupleoutput = circshift(tuple.hashtable(hashkey),[fix(row),-fix(col)]);
+                % Bugfix #1: approximation of the position was not correct.
+                % fix() was substituted with round()
+                tupleoutput = circshift(tuple.hashtable(hashkey),[round(row), -round(col)]); 
         end
 
-        outputs(:,:,sindex) = tupleoutput;
-        output = output .* tupleoutput;
+        outputs(:, :, sindex) = tupleoutput; % intermediate responses
+        output = output .* tupleoutput; % construction of final response
         
         if ~any(output(:))
             output = zeros(sz);
@@ -146,7 +168,7 @@ function [output] = computeCOSFIRE(inputImage,operator,tuple)
         tupleweight = exp(-(operator.tuples(3,:).^2)./(2*tupleweightsigma*tupleweightsigma));    
         output = output .^ (1/sum(tupleweight));    
     elseif strcmp(operator.params.COSFIRE.outputfunction, 'min')
-        % Compute the COSFIRE output using geometric mean
+        % Compute the COSFIRE output using min operation
         output = min(outputs, [], 3);
     elseif strcmp(operator.params.COSFIRE.outputfunction, 'geometricmean')
         % Compute the COSFIRE output using geometric mean
@@ -167,6 +189,6 @@ function [output] = computeCOSFIRE(inputImage,operator,tuple)
         output = median(outputs, 3);
         output(ind) = 0;
     else
-        % Other multivariate functions can be used
+        % Other combination functions can be added here.
     end
     outputs = [];
